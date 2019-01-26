@@ -41,7 +41,7 @@
 [11,func,backward_detection_layer,detection_layer.c,219]*
 //find in (detection_layer.c,35)
 
-[12,error,ipl_to_image,image.c,459]
+[12,error,Segmentation fault,image.c,459]
 /*gdb debug information
 Program received signal SIGSEGV, Segmentation fault.
 ipl_to_image (src=0x557fa9c0) at ./src/image.c:459
