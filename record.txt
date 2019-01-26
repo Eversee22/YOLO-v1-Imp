@@ -1,0 +1,62 @@
+//yolov1
+[1,func,train_network,network.c,263]
+//train one epoch, find in (yolo.c,73)
+
+[2,func,parse_net_options,parser.c,503]
+//initiate network according to "net" node in config file
+//batch=64
+//learning_rate=0.0005
+//h(height,input)=448
+//w(width,input)=448
+//c(channel,input)=3
+
+[3,func,train_network_datum,network.c,225]
+//train one batch
+
+[4,func,load_weights_upto,parser.c,1003]
+//load weights
+//net.seen is the 4th int bytes in the weight file
+
+[5,func,get_network_cost,network.c,183]
+//calculate layer average cost
+
+/*//parse network//*/
+[6,struct,section,parser.c,33]
+//represent a node in the config file,
+//'type' is the node type such as 'net','convolutional' etc.,
+//'options' is the key-value pairs set in the node
+
+[7,func,parse_network_cfg,parser.c,584]
+//build network from config file, find in (yolo.c,23)
+
+[8,func,parse_detection,parser.c,284]
+//parse the detection layer of yolov1, find in (parser.c,639)
+
+[9,func,make_detection_layer,detection_layer.c,13]*
+//make and set detection layer, find in (parser.c,291)
+
+[10,func,forward_detection_layer,detection_layer.c,49]*
+//find in (detection_layer.c,34)
+
+[11,func,backward_detection_layer,detection_layer.c,219]*
+//find in (detection_layer.c,35)
+
+[12,error,ipl_to_image,image.c,459]
+/*gdb debug information
+Program received signal SIGSEGV, Segmentation fault.
+ipl_to_image (src=0x557fa9c0) at ./src/image.c:459
+459	    unsigned char *data = (unsigned char *)src->imageData;
+(gdb) bt
+#0  0x0000555555566f58 in ipl_to_image (src=0x557fa9c0) at ./src/image.c:459
+#1  0x00005555555671c1 in load_image_cv (filename=filename@entry=0x7fffffffd520 "data/labels/32_0.png", channels=channels@entry=3) at ./src/image.c:497
+#2  0x000055555556a74d in load_image (filename=filename@entry=0x7fffffffd520 "data/labels/32_0.png", w=w@entry=0, h=h@entry=0, c=c@entry=3)
+    at ./src/image.c:1183
+#3  0x000055555556aa5f in load_image_color (filename=filename@entry=0x7fffffffd520 "data/labels/32_0.png", w=w@entry=0, h=h@entry=0) at ./src/image.c:1198
+#4  0x000055555556ab2e in load_alphabet () at ./src/image.c:175
+#5  0x00005555555837c3 in test_yolo (cfgfile=0x7fffffffe14c "cfg/yolov1/yolo.cfg", weightfile=0x7fffffffe160 "weights/yolov1.weights", filename=0x7fffffffe177 "data/dog.jpg", thresh=thresh@entry=0.200000003) at ./src/yolo.c:288
+#6  0x0000555555583bf4 in run_yolo (argc=6, argv=0x7fffffffdd58)
+    at ./src/yolo.c:351
+#7  0x000055555557aa0c in main (argc=6, argv=0x7fffffffdd58)
+    at ./src/darknet.c:376
+*/
+//to solve this, add `#include "opencv2/imgcodecs/imgcodecs_c.h"` to src/image.c(`#ifdef OPENCV` block,13)
