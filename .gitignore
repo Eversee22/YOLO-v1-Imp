@@ -56,11 +56,14 @@ dkms.conf
 cmake-build-debug
 CMakeLists.txt
 
-#
+#out
 backup
 results
 weights
 bad.list
-.jpg
-.png
+*.jpg
+*.png
+darknet
+
+#dataset
 VOCdevkit
