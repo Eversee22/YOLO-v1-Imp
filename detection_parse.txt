@@ -1,0 +1,21 @@
+//forward detection
+in detection layer:
+  shape of l.output is (l.batch, l.side*l.side*l.classes+l.side*l.side*l.n+l.side*l.side*l.n*l.coords) //concatenate each batch
+  shape of state.truth is (l.batch, l.side*l.side*(1+l.classes+l.coords)) //concatenate each grid cell
+
+in forward_detection_layer(), executing process is following:
+//l.delta is the bias between prediction and truth, using for calculating final loss
+  b.for each feature map //index = b*l.inputs;
+	  i.for each grid cell
+		  s1.calculating no object loss for l.n predicted bounding boxes(l.delta,l.cost,avg_anyobj)
+		  s2.if grounding truth contains object，do as follows, or move to next grid cell(i+1)
+		  s3.calculating classes loss for l.classes predicted classes(l.delta,avg_cat,avg_allcat)
+		  s4.choosing best bounding box among predicted bounding boxes via IOU and MSE
+		  s5.for the best bounding box
+			  .change no object loss to object loss(l.cost,l.delta,avg_obj)
+			  .calculating coords loss(l.delta)
+			  .calculating IOU loss(l.cost,avg_iou)
+		  s6.update object counter(count)
+  outb1.calculating l.cost according to l.delta
+  outb2.move to next feature map(b+1)
+
