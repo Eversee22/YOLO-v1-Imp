@@ -21,7 +21,7 @@ def parsecfg(cfgfile):
 			if len(block) != 0:
 				blocks.append(block)
 				block = {}
-			block['type'] = line[1:line.find(']')]
+			block['Ltype'] = line[1:line.find(']')]
 		else:
 			key,value = line.split('=')
 			block[key.rstrip()] = value.lstrip()
@@ -30,7 +30,7 @@ def parsecfg(cfgfile):
 	return  blocks
 
 dir = 'cfg/'
-cfgtype = 'yolov1/yolo.train2'
+cfgtype = 'extraction'
 suffix = '.cfg'
 
 if len(sys.argv) >= 2:
@@ -39,11 +39,11 @@ if len(sys.argv) >= 2:
 blocks = parsecfg(dir+cfgtype+suffix)
 of = open(dir+cfgtype+'.txt','w')
 for b in blocks:
-	if b['type'] == 'convolutional':
-		of.write(b['type']+'[f:{0}x{0},s:{1},n:{2}]\n'.format(b['size'],b['stride'],b['filters']))
-	elif b['type'] == 'maxpool':
-		of.write(b['type']+'[f:{0}x{0},s:{1}]\n'.format(b['size'],b['stride']))
+	if b['Ltype'] == 'convolutional':
+		of.write('convolutional'+'[f:{0}x{0},s:{1},n:{2}]\n'.format(b['size'],b['stride'],b['filters']))
+	elif b['Ltype'] == 'maxpool':
+		of.write('maxpool'+'[f:{0}x{0},s:{1}]\n'.format(b['size'],b['stride']))
 	else:
-		of.write(b['type']+'\n')
+		of.write(b['Ltype']+'\n')
 of.close()
 print('over')

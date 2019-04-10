@@ -136,7 +136,7 @@ if __name__=='__main__':
         os.system('./darknet yolo test cfg/yolov1/yolo.cfg {0} data/dog.jpg'.format(weights))
     if target == 'train':
         weights = 'weights/extraction.conv.weights'
-        os.system('./darknet yolo train cfg/yolov1/yolo.train.cfg {0} data/dog.jpg'.format(weights))
+        os.system('./darknet yolo train cfg/yolov1/yolo.train.cfg {0}'.format(weights))
     if target == 'valid':
         os.system('./darknet yolo valid cfg/yolov1/yolo.cfg {0}'.format(weights))
         print('Evaluating detections')

@@ -14,9 +14,12 @@ char *voc_names[] = {"aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "c
 
 void train_yolo(char *cfgfile, char *weightfile)
 {
-    char *train_images = "/home/blacksun2/github/darknet-2016-11-22/VOCdevkit/train.txt";
+    char *train_images = "/home/blacksun2/github/darknet-2016-11-22/VOCdevkit/train07.txt";
     char *backup_directory = "/home/blacksun2/github/darknet-2016-11-22/backup/";
     srand(time(0));
+//    char outfn[256];
+//    sprintf(outfn,"%s/record%u.txt","train_record",time(0));
+//    freopen(outfn,"w",stdout);
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
     float avg_loss = -1;
@@ -74,8 +77,8 @@ void train_yolo(char *cfgfile, char *weightfile)
         if (avg_loss < 0) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1; //Exponential Weighted Moving Average
 
-        printf("%d: %f, %f avg, %f rate, %lf seconds, %d images\n", i, loss, avg_loss, get_current_rate(net), sec(clock()-time), i*imgs);
-        if(i%1000==0 || (i < 1000 && i%200 == 0)){
+        printf("\n%d: %f, %f avg, %f rate, %lf seconds, %d images\n\n", i, loss, avg_loss, get_current_rate(net), sec(clock()-time), i*imgs);
+        if(i%5000==0){
             char buff[256];
             sprintf(buff, "%s/%s_%d.weights", backup_directory, base, i);
             save_weights(net, buff);
@@ -224,7 +227,7 @@ void validate_yolo_recall(char *cfgfile, char *weightfile)
     }
     box *boxes = calloc(side*side*l.n, sizeof(box));
     float **probs = calloc(side*side*l.n, sizeof(float *));
-    for(j = 0; j < side*side*l.n; ++j) probs[j] = calloc(classes, sizeof(float *));
+    for(j = 0; j < side*side*l.n; ++j) probs[j] = calloc(classes, sizeof(float /***/));
 
     int m = plist->size;
     int i=0;
@@ -281,6 +284,54 @@ void validate_yolo_recall(char *cfgfile, char *weightfile)
         free_image(orig);
         free_image(sized);
     }
+}
+
+void test_many(char* inp, char *cfgfile, char *weightfile, float thresh){
+    list *plist = get_paths(inp);
+    char **paths = (char **)list_to_array(plist);
+    int m = plist->size;
+    printf("%d images\n",m);
+    int i,j;
+    image **alphabet = load_alphabet();
+    network net = parse_network_cfg(cfgfile);
+    if(weightfile){
+        load_weights(&net, weightfile);
+    }
+    detection_layer l = net.layers[net.n-1];
+    set_batch_network(&net, 1);
+    srand(2222222);
+    int total = l.side*l.side*l.n;
+    box *boxes = calloc(total, sizeof(box));
+    float **probs = calloc(total, sizeof(float *));
+    for(j = 0; j < l.side*l.side*l.n; ++j) probs[j] = calloc(l.classes, sizeof(float));
+    float nms = .5;
+    clock_t time;
+    time=clock();
+    for(i = 0;i<m;++i){
+        char* path = paths[i];
+        image im = load_image_color(path,0,0);
+        image sized = resize_image(im, net.w, net.h);
+        float *X = sized.data;
+        network_predict(net, X);
+        get_detection_boxes(l, 1, 1, thresh, probs, boxes, 0);
+        if(nms) do_nms_sort(boxes, probs, l.side*l.side*l.n, l.classes, nms);
+        //draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, alphabet, 20);
+        draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, voc_names, alphabet, 20);
+        show_image(im, "predictions");
+
+        free_image(im);
+        free_image(sized);
+#ifdef OPENCV
+        cvWaitKey(0);
+        //cvDestroyAllWindows();
+#endif
+    }
+    printf("%f seconds per image.\n", sec(clock()-time)/m);
+    for(i=0;i<total;++i)
+        free(probs[i]);
+    free(probs);
+    free(boxes);
+
 }
 
 void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
@@ -341,7 +392,7 @@ void run_yolo(int argc, char **argv)
     int cam_index = find_int_arg(argc, argv, "-c", 0);
     int frame_skip = find_int_arg(argc, argv, "-s", 0);
     if(argc < 4){
-        fprintf(stderr, "usage: %s %s [train/test/valid] [cfg] [weights (optional)]\n", argv[0], argv[1]);
+        fprintf(stderr, "usage: %s %s [train/test/valid/fps] [cfg] [weights (optional)]\n", argv[0], argv[1]);
         return;
     }
 
@@ -353,4 +404,5 @@ void run_yolo(int argc, char **argv)
     else if(0==strcmp(argv[2], "valid")) validate_yolo(cfg, weights);
     else if(0==strcmp(argv[2], "recall")) validate_yolo_recall(cfg, weights);
     else if(0==strcmp(argv[2], "demo")) demo(cfg, weights, thresh, cam_index, filename, voc_names, 20, frame_skip, prefix);
+    else if(0==strcmp(argv[2], "fps")) test_many(filename,cfg,weights,thresh);
 }

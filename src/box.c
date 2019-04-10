@@ -253,7 +253,7 @@ int nms_comparator(const void *pa, const void *pb)
  * @param probs //class confidences of each box,shape [l.side*l.side*l.n,l.classes]
  * @param total
  * @param classes
- * @param thresh //iou thresh
+ * @param thresh //nms thresh
  */
 void do_nms_sort(box *boxes, float **probs, int total, int classes, float thresh)
 {
@@ -273,7 +273,7 @@ void do_nms_sort(box *boxes, float **probs, int total, int classes, float thresh
         }
         qsort(s, total, sizeof(sortable_bbox), nms_comparator); //descending according to class confidence
         for(i = 0; i < total; ++i){
-            if(probs[s[i].index][k] == 0) continue; //ignore if no object
+            if(probs[s[i].index][k] == 0) continue;
             box a = boxes[s[i].index];
             for(j = i+1; j < total; ++j){
                 box b = boxes[s[j].index];

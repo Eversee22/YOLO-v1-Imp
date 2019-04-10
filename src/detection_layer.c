@@ -77,7 +77,7 @@ void forward_detection_layer(const detection_layer l, network_state state)
             int index = b*l.inputs; //locate to one map
             for (i = 0; i < locations; ++i) {
                 //get ground truth of current grid cell
-                int truth_index = (b*locations + i)*(l.classes+1+l.coords); //one cell one truth
+                int truth_index = (b*locations + i)*(1+l.classes+l.coords); //one cell one truth
 //                int truth_index = b*locations*(l.classes+1+l.coords)+i*(l.classes+1+l.coords);
                 int is_obj = state.truth[truth_index];
                 //n predicted bounding boxes in one grid cell
@@ -214,7 +214,8 @@ void forward_detection_layer(const detection_layer l, network_state state)
         *(l.cost) = pow(mag_array(l.delta, l.outputs * l.batch), 2);
 
 
-        printf("Detection Avg IOU: %f, Pos Cat: %f, All Cat: %f, Pos Obj: %f, Any Obj: %f, count: %d\n", avg_iou/count, avg_cat/count, avg_allcat/(count*l.classes), avg_obj/count, avg_anyobj/(l.batch*locations*l.n), count);
+        printf("Detection Avg IOU: %f, Pos Cat: %f, All Cat: %f, Pos Obj: %f, Any Obj: %f, count: %d\n ",
+                avg_iou/count, avg_cat/count, avg_allcat/(count*l.classes), avg_obj/count, avg_anyobj/(l.batch*locations*l.n), count);
         //if(l.reorg) reorg(l.delta, l.w*l.h, size*l.n, l.batch, 0);
     }
 }

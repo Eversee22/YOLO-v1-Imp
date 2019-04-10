@@ -982,6 +982,16 @@ void load_convolutional_weights(layer l, FILE *fp)
             fread(l.rolling_variance, sizeof(float), l.n, fp);
         }
         fread(l.weights, sizeof(float), num, fp);
+//        if(l.n==64){
+//            printf("bias:");
+//            for(int i = 0;i<l.n;++i)
+//                printf("%f ",l.biases[i]);
+//            printf("\n");
+//            printf("weight:");
+//            for(int i=0;i<num;++i)
+//                printf("%f ",l.weights[i]);
+//            printf("\n");
+//        }
     }
     if(l.adam){
         fread(l.m, sizeof(float), num, fp);

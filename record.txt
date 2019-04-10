@@ -1,4 +1,40 @@
 //yolov1
+[0,layers,,,]
+/*
+layer     filters    size              input                output
+    0 conv     64  7 x 7 / 2   448 x 448 x   3   ->   224 x 224 x  64
+    1 max          2 x 2 / 2   224 x 224 x  64   ->   112 x 112 x  64
+    2 conv    192  3 x 3 / 1   112 x 112 x  64   ->   112 x 112 x 192
+    3 max          2 x 2 / 2   112 x 112 x 192   ->    56 x  56 x 192
+    4 conv    128  1 x 1 / 1    56 x  56 x 192   ->    56 x  56 x 128
+    5 conv    256  3 x 3 / 1    56 x  56 x 128   ->    56 x  56 x 256
+    6 conv    256  1 x 1 / 1    56 x  56 x 256   ->    56 x  56 x 256
+    7 conv    512  3 x 3 / 1    56 x  56 x 256   ->    56 x  56 x 512
+    8 max          2 x 2 / 2    56 x  56 x 512   ->    28 x  28 x 512
+    9 conv    256  1 x 1 / 1    28 x  28 x 512   ->    28 x  28 x 256
+   10 conv    512  3 x 3 / 1    28 x  28 x 256   ->    28 x  28 x 512
+   11 conv    256  1 x 1 / 1    28 x  28 x 512   ->    28 x  28 x 256
+   12 conv    512  3 x 3 / 1    28 x  28 x 256   ->    28 x  28 x 512
+   13 conv    256  1 x 1 / 1    28 x  28 x 512   ->    28 x  28 x 256
+   14 conv    512  3 x 3 / 1    28 x  28 x 256   ->    28 x  28 x 512
+   15 conv    256  1 x 1 / 1    28 x  28 x 512   ->    28 x  28 x 256
+   16 conv    512  3 x 3 / 1    28 x  28 x 256   ->    28 x  28 x 512
+   17 conv    512  1 x 1 / 1    28 x  28 x 512   ->    28 x  28 x 512
+   18 conv   1024  3 x 3 / 1    28 x  28 x 512   ->    28 x  28 x1024
+   19 max          2 x 2 / 2    28 x  28 x1024   ->    14 x  14 x1024
+   20 conv    512  1 x 1 / 1    14 x  14 x1024   ->    14 x  14 x 512
+   21 conv   1024  3 x 3 / 1    14 x  14 x 512   ->    14 x  14 x1024
+   22 conv    512  1 x 1 / 1    14 x  14 x1024   ->    14 x  14 x 512
+   23 conv   1024  3 x 3 / 1    14 x  14 x 512   ->    14 x  14 x1024
+   24 conv   1024  3 x 3 / 1    14 x  14 x1024   ->    14 x  14 x1024
+   25 conv   1024  3 x 3 / 2    14 x  14 x1024   ->     7 x   7 x1024
+   26 conv   1024  3 x 3 / 1     7 x   7 x1024   ->     7 x   7 x1024
+   27 conv   1024  3 x 3 / 1     7 x   7 x1024   ->     7 x   7 x1024
+   28 Local Layer: 7 x 7 x 1024 image, 256 filters -> 7 x 7 x 256 image
+   29 dropout       p = 0.50               12544  ->  12544
+   30 connected                            12544  ->  1715
+   31 Detection Layer
+*/
 [1,func,train_network,network.c,263]
 //train one epoch, find in (yolo.c,73)
 
@@ -60,3 +96,199 @@ ipl_to_image (src=0x557fa9c0) at ./src/image.c:459
     at ./src/darknet.c:376
 */
 //to solve this, add `#include "opencv2/imgcodecs/imgcodecs_c.h"` to src/image.c(`#ifdef OPENCV` block,13)
+
+[13,info,parse_network_cfg,,]
+/*
+parse_network_cfg (filename=0x7fffffffe154 "cfg/yolov1/yolo.cfg")
+    at ./src/parser.c:585
+585	{
+(gdb) n
+586	    list *sections = read_cfg(filename);
+(gdb) 
+587	    node *n = sections->front;
+(gdb) 
+588	    if(!n) error("Config file has no sections");
+(gdb) 
+589	    network net = make_network(sections->size - 1);
+(gdb) 
+590	    net.gpu_index = gpu_index;
+(gdb) 
+593	    section *s = (section *)n->val;
+(gdb) 
+594	    list *options = s->options;
+(gdb) 
+595	    if(!is_network(s)) error("First section must be [net] or [network]");
+(gdb) 
+596	    parse_net_options(options, &net);
+(gdb) 
+598	    params.h = net.h;
+(gdb) 
+599	    params.w = net.w;
+(gdb) 
+600	    params.c = net.c;
+(gdb) 
+601	    params.inputs = net.inputs;
+(gdb) 
+602	    params.batch = net.batch;
+(gdb) 
+603	    params.time_steps = net.time_steps;
+(gdb) 
+604	    params.net = net;
+(gdb) 
+607	    n = n->next;
+(gdb) print net.h
+$1 = 448
+(gdb) print net.w
+$2 = 448
+(gdb) print net.c
+$3 = 3
+(gdb) print net.inputs
+$4 = 602112
+(gdb) print net.batch
+$5 = 1
+(gdb) n
+609	    free_section(s);
+(gdb) 
+610	    fprintf(stderr, "layer     filters    size              input                output\n");
+(gdb) 
+layer     filters    size              input                output
+608	    int count = 0;
+(gdb) 
+606	    size_t workspace_size = 0;
+(gdb) 
+611	    while(n){
+(gdb) 
+612	        params.index = count;
+(gdb) 
+613	        fprintf(stderr, "%5d ", count);
+(gdb) 
+    0 614	        s = (section *)n->val;
+(gdb) 
+615	        options = s->options;
+(gdb) 
+616	        layer l = {0};
+(gdb) 
+617	        LAYER_TYPE lt = string_to_layer_type(s->type);
+(gdb) 
+618	        if(lt == CONVOLUTIONAL){
+(gdb) 
+619	            l = parse_convolutional(options, params);
+(gdb) print lt
+$6 = CONVOLUTIONAL
+(gdb) 
+$7 = CONVOLUTIONAL
+(gdb) n
+[New Thread 0x7fffb5b3c700 (LWP 20773)]
+[New Thread 0x7fffb533b700 (LWP 20774)]
+conv     64  7 x 7 / 2   448 x 448 x   3   ->   224 x 224 x  64
+668	        l.dontload = option_find_int_quiet(options, "dontload", 0);
+(gdb) 
+669	        l.dontloadscales = option_find_int_quiet(options, "dontloadscales", 0);
+(gdb) 
+670	        option_unused(options);
+(gdb) 
+671	        net.layers[count] = l;
+(gdb) 
+672	        if (l.workspace_size > workspace_size) workspace_size = l.workspace_size;
+(gdb) 
+673	        free_section(s);
+(gdb) 
+674	        n = n->next;
+(gdb) 
+675	        ++count;
+(gdb) 
+676	        if(n){
+(gdb) 
+677	            params.h = l.out_h;
+(gdb) 
+678	            params.w = l.out_w;
+(gdb) 
+679	            params.c = l.out_c;
+(gdb) 
+680	            params.inputs = l.outputs;
+(gdb) 
+611	    while(n){
+(gdb) 
+612	        params.index = count;
+(gdb) 
+613	        fprintf(stderr, "%5d ", count);
+(gdb) 
+    1 614	        s = (section *)n->val;
+(gdb) 
+615	        options = s->options;
+(gdb) print params.inputs
+$8 = 3211264
+(gdb) n
+616	        layer l = {0};
+(gdb) 
+617	        LAYER_TYPE lt = string_to_layer_type(s->type);
+(gdb) 
+618	        if(lt == CONVOLUTIONAL){
+(gdb) 
+620	        }else if(lt == LOCAL){
+(gdb) 
+622	        }else if(lt == ACTIVE){
+(gdb) 
+624	        }else if(lt == RNN){
+(gdb) 
+626	        }else if(lt == GRU){
+(gdb) 
+628	        }else if(lt == CRNN){
+(gdb) 
+630	        }else if(lt == CONNECTED){
+(gdb) 
+632	        }else if(lt == CROP){
+(gdb) 
+634	        }else if(lt == COST){
+(gdb) 
+636	        }else if(lt == REGION){
+(gdb) 
+638	        }else if(lt == DETECTION){
+(gdb) 
+640	        }else if(lt == SOFTMAX){
+(gdb) 
+643	        }else if(lt == NORMALIZATION){
+(gdb) 
+645	        }else if(lt == BATCHNORM){
+(gdb) 
+647	        }else if(lt == MAXPOOL){
+(gdb) 
+648	            l = parse_maxpool(options, params);
+(gdb) 
+max          2 x 2 / 2   224 x 224 x  64   ->   112 x 112 x  64
+668	        l.dontload = option_find_int_quiet(options, "dontload", 0);
+(gdb) 
+669	        l.dontloadscales = option_find_int_quiet(options, "dontloadscales", 0);
+(gdb) 
+670	        option_unused(options);
+(gdb) 
+671	        net.layers[count] = l;
+(gdb) 
+672	        if (l.workspace_size > workspace_size) workspace_size = l.workspace_size;
+(gdb) 
+673	        free_section(s);
+(gdb) 
+674	        n = n->next;
+(gdb) 
+675	        ++count;
+(gdb) 
+676	        if(n){
+(gdb) 
+677	            params.h = l.out_h;
+(gdb) 
+678	            params.w = l.out_w;
+(gdb) 
+679	            params.c = l.out_c;
+(gdb) 
+680	            params.inputs = l.outputs;
+(gdb) 
+611	    while(n){
+(gdb) 
+612	        params.index = count;
+(gdb) 
+613	        fprintf(stderr, "%5d ", count);
+(gdb) 
+    2 614	        s = (section *)n->val;
+(gdb) print params.inputs
+$9 = 802816
+*/

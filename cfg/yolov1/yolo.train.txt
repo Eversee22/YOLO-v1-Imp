@@ -23,6 +23,7 @@ convolutional[f:1x1,s:1,n:512]
 convolutional[f:3x3,s:1,n:1024]
 convolutional[f:1x1,s:1,n:512]
 convolutional[f:3x3,s:1,n:1024]
+####
 convolutional[f:3x3,s:1,n:1024]
 convolutional[f:3x3,s:2,n:1024]
 convolutional[f:3x3,s:1,n:1024]

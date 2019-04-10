@@ -263,8 +263,8 @@ float train_network_sgd(network net, data d, int n)
 float train_network(network net, data d)
 {
     assert(d.X.rows % net.batch == 0);
-    int batch = net.batch; //batch size,64
-    int n = d.X.rows / batch; //n batches
+    int batch = net.batch; //
+    int n = d.X.rows / batch; //
     float *X = calloc(batch*d.X.cols, sizeof(float));
     float *y = calloc(batch*d.y.cols, sizeof(float));
 
